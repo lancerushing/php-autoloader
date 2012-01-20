@@ -123,10 +123,10 @@ class autoload_AutoLoader
     assert('is_string($className)');
 
     if (class_exists($className, false) || interface_exists($className, false))
-    {
+    {	
       return false;
     }
-
+	//$className = trim($className, '\\');
     $path = isSet($this->index[$className])? $this->index[$className] : null;
 
     $found = false;
@@ -137,7 +137,7 @@ class autoload_AutoLoader
         require_once $path;
         $found = true;
       }
-    }
+    } 
 
     return $found;
   }
@@ -160,6 +160,7 @@ class autoload_AutoLoader
                                autoload_IndexStorage $storage,
                                $enforceAbsolutePath = false)
   {
+
     $content = $scanner->scan($paths, $enforceAbsolutePath);
     $storage->store($content);
     return $content;
