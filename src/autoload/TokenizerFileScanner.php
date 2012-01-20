@@ -119,7 +119,7 @@ class autoload_TokenizerFileScanner implements autoload_FileScanner
     if (false == is_array($paths))
     {
       throw new InvalidArgumentException(__METHOD__ . '(): $paths is not an array! $paths=' . $paths);
-    }
+    }	
     // check if all paths are strings without PATH_SEPARATOR and they refer to existing directory/file
     foreach ($paths as $path)
     {
@@ -145,6 +145,7 @@ class autoload_TokenizerFileScanner implements autoload_FileScanner
 
     foreach ($paths as $path)
     {
+		
       $index = $this->scanPath($path, $enforceAbsolutePath);
 
       // detect duplicates - no class name can be present in existing indexes and index from scanned path
@@ -161,7 +162,7 @@ class autoload_TokenizerFileScanner implements autoload_FileScanner
     return $class2File;
   }
 
-  private function scanPath($path, $enforceAbsolutePath)
+  protected function scanPath($path, $enforceAbsolutePath)
   {
     $class2File = array();
 
@@ -208,7 +209,7 @@ class autoload_TokenizerFileScanner implements autoload_FileScanner
     }
   }
 
-  private function checkFile(SplFileInfo $fileInfo, $fileName)
+  protected function checkFile(SplFileInfo $fileInfo, $fileName)
   {
     return $fileInfo->isFile() &&
            $fileInfo->isReadable() &&
@@ -249,7 +250,7 @@ class autoload_TokenizerFileScanner implements autoload_FileScanner
   private function scanFileContent($fileName, SplFileInfo $fileInfo, array& $class2File)
   {
     $content = file_get_contents($fileName);
-
+    $namespace_prefix = '';
     if (false === $content)
     {
       throw new RuntimeException(__METHOD__ . '(): cannot read file: ' . $fileName . '!');
@@ -260,11 +261,15 @@ class autoload_TokenizerFileScanner implements autoload_FileScanner
     {
       switch($tokens[$i][0])
       {
+        case T_NAMESPACE:
+          $i += 2; //skip the whitespace token
+          $namespace_prefix = $tokens[$i][1] . '\\';
+          break;
         case T_CLASS:
         case T_INTERFACE:
         {
           $i += 2; //skip the whitespace token
-          $className = $tokens[$i][1];
+          $className = $namespace_prefix . $tokens[$i][1];
           if (false == isSet($class2File[$className]))
           {
             $class2File[$className] = $this->dos2unix($fileName);
