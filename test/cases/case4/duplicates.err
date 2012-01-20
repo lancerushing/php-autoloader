@@ -1,0 +1,29 @@
+<?php
+/**
+ * PHP file with duplicated class names
+ *
+ * @package   case4
+ * @author    M.Olszewski
+ * @since     9 Apr 2010
+ * @copyright Copyright (c) 2010 by M.Olszewski. All rights reserved.
+ */
+
+/**
+ * ClassA for test case 4.
+ *
+ * @author  M.Olszewski
+ * @package case4
+ */
+class ClassA
+{
+}
+
+/**
+ * Another ClassA for test case 4.
+ *
+ * @author  M.Olszewski
+ * @package case4
+ */
+class ClassA
+{
+}

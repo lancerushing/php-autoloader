@@ -1,0 +1,19 @@
+This is short description of the test cases:
+
+Case 1
+- all files are valid PHP files
+- File1_ClassA.php file with ClassA definition and .php extension (default one)
+- File2_NoClass.php file without any classes and interfaces and .php extension (default one)
+- File3_EmptyFile.php empty file with .php extension (default one)
+- File4_ClassB_NonDefaultExtension.php.class with ClassB definition and non-default extension
+- File5_InterfaceA.php file with InterfaceA definition and .php extension (default one)
+- File6_InterfaceB_NonDefaultExtension.php.interface file with InterfaceB definition and non-default extension
+
+Case 2
+- one file: error.err with parse error that doesn't interfere with class ClassA being added to index file
+
+Case 3
+- one file: error.err with parse error that prevents included class ClassA being added to index file
+
+Case 4
+- one file: duplicates.err with two definitions of the same class (ClassA)

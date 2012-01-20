@@ -1,0 +1,20 @@
+<?php
+/**
+ * InterfaceB
+ *
+ * @package   case1
+ * @author    M.Olszewski
+ * @since     2010-04-08
+ * @copyright Copyright (c) 2010 by M.Olszewski. All rights reserved.
+ */
+
+
+/**
+ * InterfaceB for test case 1 inside file with non-default extension.
+ *
+ * @author  M.Olszewski
+ * @package case1
+ */
+interface InterfaceB
+{
+}

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="php-autoloader" default="generate" basedir=".">
+
+  <!-- Properties -->
+  <property name="project.version"               value="v1.0.0"/>
+  <property name="project.buildFile"             value="build.xml"/>
+  <property name="project.dataDir"               value="data"/>
+  <property name="project.docDir"                value="doc"/>
+  <property name="project.indexFile"             value="autoloader.index.idx"/>
+  <property name="project.releaseFile"           value="autoloader.${project.version}.zip"/>
+  <property name="project.reportDir"             value="report"/>
+  <property name="project.report.testDir"        value="${project.reportDir}/test"/>
+  <property name="project.report.coverageDir"    value="${project.reportDir}/coverage"/>
+  <property name="project.report.testReportFile" value="test_report.xml"/>
+  <property name="project.srcDir"                value="src"/>
+  <property name="project.testDir"               value="test"/>
+  
+  
+  <!-- File sets -->
+  <fileset dir="${project.docDir}" id="project.files.apidoc">
+    <include name="**"/>
+  </fileset>
+  
+  <fileset dir="." id="project.files.release">
+    <include name="${project.buildFile}"/>
+    <include name="${project.dataDir}/**"/>
+    <include name="${project.docDir}/**"/>
+    <include name="${project.srcDir}/**"/>
+    <include name="${project.testDir}/**"/>
+    <exclude name="${project.docDir}/errors.html"/>
+    <exclude name="."/>
+  </fileset>
+  
+  <fileset dir="." id="project.files.report">
+    <include name="report/**"/>
+  </fileset>
+  
+  <fileset dir="${project.srcDir}" id="project.files.src">
+    <include name="autoload/*.php"/>
+  </fileset>
+  
+  <fileset dir="${project.testDir}" id="project.files.test">
+    <include name="**/*Test.php"/>
+  </fileset>
+  
+  <!-- Custom task definitions -->
+  <taskdef name="autoloader.generate" classname="src.task.GenerateAutoLoaderIndexTask" classpath="."/>
+  
+  <!--
+    Target performing all necessary initialization before running any other target, including
+    preparation of time stamp.
+  -->
+  <target name="init">
+    <tstamp>
+      <format property="TSTAMP" pattern="%H%M%S"/>
+    </tstamp>
+  </target>
+  
+  <!--
+    Target generating file with autoloader index using autoloader source code.
+    Should be treated as an example of usage then anything else.
+  -->
+  <!-- Autoloader index generate -->
+  <target name="generate" depends="init">
+    <autoloader.generate indexPath="${project.indexFile}" compression="9">
+      <fileset refid="project.files.src"/>
+    </autoloader.generate>
+  </target>
+  
+  <!--
+    Target performing all necessary initialization before running unit tests, including
+    cleaning and recreating test report directory
+  -->
+  <target name="test.init">
+    <delete includeemptydirs="true" quiet="true">
+      <fileset refid="project.files.report"/>
+    </delete>
+    
+    <mkdir dir="${project.report.testDir}"/>
+    <mkdir dir="${project.report.coverageDir}"/>
+  </target>
+  
+  <!-- 
+    Target running unit tests and generating HTML report
+  -->
+  <target name="test" depends="init, test.init">
+    <phpunit codecoverage="false">
+      <formatter todir="${project.report.testDir}" type="xml"
+                 outfile="${project.report.testReportFile}"/>
+      <batchtest>
+        <fileset refid="project.files.test"/>
+      </batchtest>
+    </phpunit>
+    
+    <phingcall target="do.test.report"/>
+  </target>
+  
+  <!--
+    Inner target creating HTML report from XML file
+  -->
+  <target name="do.test.report">
+    <!-- Translate XML into HTML -->
+    <phpunitreport infile="${project.report.testDir}/${project.report.testReportFile}"
+                   format="frames" todir="${project.report.testDir}"
+                   styledir="${project.dataDir}"/>
+  </target>
+  
+  <!-- 
+    Target running unit tests with code coverage and generating HTML reports
+    (one for tests and one for code coverage)
+  -->
+  <target name="codecoverage" depends="init, test.init">
+    <coverage-setup database="${project.report.coverageDir}/coverage.db">
+      <fileset refId="project.files.src" />
+    </coverage-setup>
+    
+    <phpunit codecoverage="true">
+      <formatter todir="${project.report.testDir}" type="xml"
+                 outfile="${project.report.testReportFile}"/>
+      <batchtest>
+        <fileset refid="project.files.test"/>
+      </batchtest>
+    </phpunit>
+    
+    <phingcall target="do.test.report"/>
+    
+    <coverage-report outfile="${project.report.coverageDir}/coverage.xml">
+      <report todir="${project.report.coverageDir}"
+              styledir="${project.dataDir}"/>
+    </coverage-report>
+  </target>
+  
+  <!--
+    Target performing all necessary initialization before generating API docs, including
+    cleaning and recreating API docs directory
+  -->
+  <target name="apidoc.init">
+    <delete includeemptydirs="true" quiet="true">
+      <fileset refid="project.files.apidoc"/>
+    </delete>
+    
+    <mkdir dir="${project.docDir}"/>
+  </target>
+  
+  <!--
+    Target generating API docs for this project.
+  -->
+  <target name="apidoc" depends="init, apidoc.init">
+    <phpdoc title="${phing.project.name} Documentation"
+            destdir="${project.docDir}"
+            configDir="PhpDocumentor"
+            sourcecode="no"
+            output="HTML:frames:default"
+            quiet="true">
+      <fileset refId="project.files.src"/>
+    </phpdoc>
+  </target>
+  
+  <!--
+    Target performing full release for this project:
+    1. Run all tests, halts on failures and errors
+    2. Generates API docs
+    3. Creates ZIP file with all relevant project files
+  -->
+  <target name="release" depends="init">
+    <!-- Run unit tests, do not generate report -->
+    <phpunit haltonerror="true" haltonfailure="true">
+      <formatter usefile="false" type="plain" />
+      <batchtest>
+        <fileset refid="project.files.test"/>
+      </batchtest>
+    </phpunit>
+    
+    <!-- Generate API docs -->
+    <phingcall target="apidoc"/>
+    
+    <!-- Delete ZIP file -->
+    <delete file="${project.releaseFile}" quiet="true"/>
+    
+    <!-- Create ZIP file -->
+    <zip destfile="${project.releaseFile}" prefix="php_autoloader/">
+      <fileset refId="project.files.release"/>
+    </zip>
+  </target>
+</project>

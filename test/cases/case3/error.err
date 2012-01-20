@@ -1,0 +1,14 @@
+<?php
+/**
+ * PHP file with parse error that results in ClassA NOT being included in index
+ *
+ * @package   case3
+ * @author    M.Olszewski
+ * @since     9 Apr 2010
+ * @copyright Copyright (c) 2010 by M.Olszewski. All rights reserved.
+ */
+
+clas ClassA
+{
+
+}
