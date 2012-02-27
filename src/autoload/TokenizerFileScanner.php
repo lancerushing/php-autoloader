@@ -257,14 +257,30 @@ class autoload_TokenizerFileScanner implements autoload_FileScanner
     }
 
     $tokens = token_get_all($content);
+	
+	$inNs = false;
     for($i = 0, $size = count($tokens); $i < $size; $i++)
     {
+		
+	  if ($inNs && $tokens[$i] == ";") {
+		  $namespace_prefix .= "\\";
+		  $inNs = false;
+	  }
       switch($tokens[$i][0])
       {
         case T_NAMESPACE:
-          $i += 2; //skip the whitespace token
-          $namespace_prefix = $tokens[$i][1] . '\\';
+			$inNs = true;
+			break;
+		case T_STRING:
+			if ($inNs) {
+			$namespace_prefix .= $tokens[$i][1];
+			}
           break;
+	     case T_NS_SEPARATOR:
+			 if ($inNs) {
+			  $namespace_prefix .= $tokens[$i][1];
+			 }
+			 break;
         case T_CLASS:
         case T_INTERFACE:
         {
